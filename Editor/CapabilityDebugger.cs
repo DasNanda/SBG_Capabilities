@@ -31,7 +31,7 @@ namespace SBG.Capabilities.Editor
 
         private float checkTimerStart;
 
-        [MenuItem("Tools/Capability Debugger")]
+        [MenuItem("SBG/Capability Debugger")]
 		public static void ShowWindow()
 		{
 			GetWindow<CapabilityDebugger>("Capability Debugger");
