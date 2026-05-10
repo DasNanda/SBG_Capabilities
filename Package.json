@@ -1,0 +1,10 @@
+"name": "com.starbannergames.capabilities",
+"version": "1.0.0",
+"displayName": "SBG Capabilities",
+"description": "A Unity Implementation of a Capability System based on the GDC talk 'Capabilities: Coding ALL the Gameplay for Split Fiction' by Ylva Werner".
+"unity": "6000.0",
+"author": {
+	"name": "Sanandana 'Nanda' Ithaler",
+	"email": "nanda@starbanner-games.com",
+	"url": ""
+}
