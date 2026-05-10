@@ -1,7 +1,6 @@
-using SBG.Capabilities.Runtime.Animation;
 using UnityEngine;
 
-namespace SBG.Capabilities.Runtime
+namespace SBG.Capabilities
 {
 	public class CapabilityComponent : MonoBehaviour
 	{

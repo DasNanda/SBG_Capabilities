@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace SBG.Capabilities.Runtime
+namespace SBG.Capabilities
 {
 	public abstract class Capability : ScriptableObject, IComparable
 	{

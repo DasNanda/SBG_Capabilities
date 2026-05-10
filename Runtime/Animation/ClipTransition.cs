@@ -1,8 +1,7 @@
 using System;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
 
-namespace SBG.Capabilities.Runtime.Animation
+namespace SBG.Capabilities.Animation
 {
 	internal class ClipTransition
 	{

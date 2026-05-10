@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
-namespace SBG.Capabilities.Runtime.Animation
+namespace SBG.Capabilities.Animation
 {
 	[RequireComponent(typeof(Animator))]
 	public class CapabilityAnimator : MonoBehaviour

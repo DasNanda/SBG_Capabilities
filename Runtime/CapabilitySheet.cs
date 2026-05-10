@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace SBG.Capabilities.Runtime
+namespace SBG.Capabilities
 {
 	[CreateAssetMenu(fileName = "NewSheet", menuName = "SBG/Capabilities/CapabilitySheet")]
 	public class CapabilitySheet : ScriptableObject

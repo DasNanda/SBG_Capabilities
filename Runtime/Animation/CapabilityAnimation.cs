@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace SBG.Capabilities.Runtime.Animation
+namespace SBG.Capabilities.Animation
 {
     [System.Serializable]
     public struct CapAnimClipEntry

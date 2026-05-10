@@ -1,4 +1,4 @@
-using SBG.Capabilities.Runtime.Animation;
+using SBG.Capabilities.Animation;
 using UnityEditor;
 using UnityEngine;
 

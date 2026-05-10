@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SBG.Capabilities.Runtime
+namespace SBG.Capabilities
 {
 	[System.Serializable]
 	public struct CapabilityBlock

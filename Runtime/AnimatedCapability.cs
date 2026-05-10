@@ -1,8 +1,7 @@
-using SBG.Capabilities.Runtime.Animation;
-using System.Data.Common;
+using SBG.Capabilities.Animation;
 using UnityEngine;
 
-namespace SBG.Capabilities.Runtime
+namespace SBG.Capabilities
 {
 	public abstract class AnimatedCapability : Capability
 	{

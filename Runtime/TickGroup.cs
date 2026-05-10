@@ -1,5 +1,5 @@
 
-namespace SBG.Capabilities.Runtime
+namespace SBG.Capabilities
 {
 	public enum TickGroup
 	{
