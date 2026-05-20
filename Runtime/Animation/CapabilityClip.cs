@@ -68,7 +68,13 @@ namespace SBG.Capabilities.Animation
             channel.Mixer.SetDone(false);
 
             playable.SetDone(false);
+
+            // For some reason we gotta set the time twice,
+            // otherwise all animation events will trigger instantly
+            // and then again at the proper timing.
             playable.SetTime(0);
+            playable.SetTime(0);
+
             playable.SetSpeed(0);
             playable.Play();
 

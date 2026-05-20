@@ -1,7 +1,9 @@
+using SBG.Capabilites.Editor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Search;
 using UnityEngine;
 
 namespace SBG.Capabilities.Editor
@@ -24,6 +26,7 @@ namespace SBG.Capabilities.Editor
 
         private Capability selectedCapability;
         private UnityEditor.Editor selectedCapabilityEditor;
+        private AnimatedCapabilityObjectPreview selectedPreview;
 
         private Texture2D tabIcon;
         private Texture2D downIcon;
@@ -61,7 +64,7 @@ namespace SBG.Capabilities.Editor
             SortTickOrder();
 
             selectedCapability = null;
-            if (selectedCapabilityEditor != null) DestroyImmediate(selectedCapabilityEditor);
+            ClearEditor();
         }
 
         private void PopulateAddChildContextMenu(Capability parent)
@@ -85,10 +88,7 @@ namespace SBG.Capabilities.Editor
         {
             Undo.undoRedoPerformed -= RefreshAssetState;
 
-            if (selectedCapabilityEditor != null)
-            {
-                DestroyImmediate(selectedCapabilityEditor);
-            }
+            ClearEditor();
         }
 
         public override void OnInspectorGUI()
@@ -197,12 +197,14 @@ namespace SBG.Capabilities.Editor
             {
                 if (GUI.Button(hor.rect, GUIContent.none, EditorStyles.toolbarButton))
                 {
-                    if (selectedCapabilityEditor != null) DestroyImmediate(selectedCapabilityEditor);
+                    ClearEditor();
 
                     if (selectedCapability != cap)
                     {
                         selectedCapability = cap;
                         selectedCapabilityEditor = CreateEditor(cap);
+                        selectedPreview = new();
+                        selectedPreview.Initialize(new[] { selectedCapability });
 
                         if (selectedCapability.IsCompound) PopulateAddChildContextMenu(selectedCapability);
                     }
@@ -210,6 +212,7 @@ namespace SBG.Capabilities.Editor
                     {
                         selectedCapability = null;
                         selectedCapabilityEditor = null;
+                        selectedPreview = null;
                     }
                 }
 
@@ -257,6 +260,17 @@ namespace SBG.Capabilities.Editor
                 DrawCapabilityEntry(cap.Children[i], color, i, depth+1);
             }
             EditorGUI.indentLevel--;
+        }
+
+        public override bool HasPreviewGUI() => selectedPreview?.HasPreviewGUI() ?? false;
+        public override GUIContent GetPreviewTitle() => selectedPreview?.GetPreviewTitle() ?? GUIContent.none;
+        public override void OnPreviewSettings() => selectedPreview?.OnPreviewSettings();
+        public override void OnInteractivePreviewGUI(Rect r, GUIStyle background) => selectedPreview?.OnInteractivePreviewGUI(r, background);
+
+        private void ClearEditor()
+        {
+            if (selectedCapabilityEditor != null) DestroyImmediate(selectedCapabilityEditor);
+            if (selectedPreview != null) selectedPreview.Cleanup();
         }
 
         private Color GetTickGroupCol(TickGroup group)

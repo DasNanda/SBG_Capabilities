@@ -5,6 +5,8 @@ namespace SBG.Capabilities
 {
 	public abstract class AnimatedCapability : Capability
 	{
+        public CapabilityAnimation Animation => animation;
+
         protected CapabilityAnimator animator;
 
         [SerializeField] protected CapabilityAnimation animation;
