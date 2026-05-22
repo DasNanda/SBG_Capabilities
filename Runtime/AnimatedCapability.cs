@@ -7,6 +7,8 @@ namespace SBG.Capabilities
 	{
         public CapabilityAnimation Animation => animation;
 
+        public virtual bool DrivenByAnimationEvent => false;
+
         protected CapabilityAnimator animator;
 
         [SerializeField] protected CapabilityAnimation animation;

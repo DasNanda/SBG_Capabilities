@@ -31,6 +31,7 @@ namespace SBG.Capabilities.Editor
         private Texture2D tabIcon;
         private Texture2D downIcon;
         private Texture2D rightIcon;
+        private Texture2D warningIcon;
 
         private const float DarkOffset = 0.1f;
 
@@ -39,6 +40,7 @@ namespace SBG.Capabilities.Editor
             tabIcon = Resources.Load<Texture2D>("Capabilities/ChildIcon");
             downIcon = EditorGUIUtility.IconContent("d_icon dropdown").image as Texture2D;
             rightIcon = EditorGUIUtility.IconContent("d_forward").image as Texture2D;
+            warningIcon = EditorGUIUtility.IconContent("Warning").image as Texture2D;
 
             sheet = (CapabilitySheet)target;
 
@@ -167,6 +169,8 @@ namespace SBG.Capabilities.Editor
                 EditorGUILayout.LabelField(selectedCapability.DisplayName, EditorStyles.boldLabel);
                 if (GUILayout.Button("Find In Hierarchy")) EditorGUIUtility.PingObject(selectedCapability);
                 EditorGUILayout.EndHorizontal();
+                string warning = CheckForAnimEventWarning(selectedCapability);
+                if (!string.IsNullOrEmpty(warning)) EditorGUILayout.HelpBox(warning, MessageType.Warning);
                 EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                 EditorGUI.indentLevel++;
                 selectedCapabilityEditor.OnInspectorGUI();
@@ -177,6 +181,8 @@ namespace SBG.Capabilities.Editor
 
         private void DrawCapabilityEntry(Capability cap, Color color, int index, int depth)
         {
+            bool showWarningIcon = !ValidateEventDrivenCapability(cap);
+
             Color.RGBToHSV(color, out float h, out float s, out float v);
 
             if (cap == selectedCapability) v += 0.75f; // Apparently hsv can go beyond 1, not sure why
@@ -236,6 +242,7 @@ namespace SBG.Capabilities.Editor
                 GUIStyle rightAligned = new GUIStyle(EditorStyles.label);
                 rightAligned.alignment = TextAnchor.MiddleRight;
 
+                if (showWarningIcon) EditorGUILayout.LabelField(new GUIContent(warningIcon), rightAligned, GUILayout.Width(40));
                 EditorGUILayout.LabelField($"{cap.TickOrder:000}", rightAligned, GUILayout.Width(75));
 
                 EditorGUILayout.Space(20, false);
@@ -376,6 +383,49 @@ namespace SBG.Capabilities.Editor
             sheet.Capablities = capList.ToArray();
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private bool ValidateEventDrivenCapability(Capability c)
+        {
+            if (c == null) return true;
+            var animCap = c as AnimatedCapability;
+            if (animCap == null || !animCap.DrivenByAnimationEvent) return true;
+
+            var clips = animCap.Animation.Clips.ToList();
+            clips.Add(new() { Clip = animCap.Animation.fallbackClip, SpecifierId = "fallback" });
+
+            foreach (var clipEntry in clips)
+            {
+                if (clipEntry.Clip == null) return false;
+                if (clipEntry.Clip.events == null || clipEntry.Clip.events.Length < 1) return false;
+            }
+
+            return true;
+        }
+
+        private string CheckForAnimEventWarning(Capability c)
+        {
+            if (c == null) return null;
+            var animCap = c as AnimatedCapability;
+            if (animCap == null || !animCap.DrivenByAnimationEvent) return null;
+
+            var clips = animCap.Animation.Clips.ToList();
+            clips.Add(new() { Clip = animCap.Animation.fallbackClip, SpecifierId = "fallback" });
+
+            foreach (var clipEntry in clips)
+            {
+                if (clipEntry.Clip == null)
+                {
+                    return $"Capability is Animation-Event driven but not all clips are assigned.";
+                }
+
+                if (clipEntry.Clip.events == null || clipEntry.Clip.events.Length < 1)
+                {
+                    return $"Capability is Animation-Event driven, but Animation Clip for specifier '{clipEntry.SpecifierId}' does not contain events";
+                }
+            }
+
+            return null;
         }
 
         private void RefreshAssetState()
