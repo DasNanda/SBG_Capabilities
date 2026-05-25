@@ -1,4 +1,5 @@
 using SBG.Capabilities;
+using SBG.Capabilities.Animation;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -30,7 +31,7 @@ namespace SBG.Capabilites.Editor
 
             SourceAnimationClipEditorFields();
 
-            AnimationClip clip = GetCurrentClip(animCap);
+            AnimationClip clip = GetCurrentClip(animCap.Animation);
             if (clip != null)
             {
                 preview = UnityEditor.Editor.CreateEditor(clip);
@@ -66,7 +67,8 @@ namespace SBG.Capabilites.Editor
         {
             base.OnInteractivePreviewGUI(r, background);
 
-            AnimationClip clip = GetCurrentClip(target as AnimatedCapability);
+            var anim = (target as AnimatedCapability)?.Animation;
+            AnimationClip clip = GetCurrentClip(anim);
             if (clip != null && (clip.GetInstanceID() != animationClipId || specifierChanged))
             {
                 CleanupPreviewEditor();
@@ -76,7 +78,7 @@ namespace SBG.Capabilites.Editor
                 return;
             }
 
-            if (preview != null)
+            if (preview != null && clip != null)
             {
                 UpdateAnimationClipEditor(preview, clip);
                 preview.OnInteractivePreviewGUI(r, background);
@@ -93,34 +95,38 @@ namespace SBG.Capabilites.Editor
             cachedStopTimeField.SetValue(timeControl, clip.length);
         }
 
-        private AnimationClip GetCurrentClip(AnimatedCapability target)
+        private AnimationClip GetCurrentClip(CapabilityAnimation anim)
         {
-            if (animSpecifierIndex - 1 >= target.Animation.Clips.Length) animSpecifierIndex = 0;
+            if (anim == null) return null;
+            if (anim.Clips == null || animSpecifierIndex - 1 >= anim.Clips.Length) animSpecifierIndex = 0;
 
             AnimationClip clip;
 
             if (animSpecifierIndex == 0)
             {
-                clip = target?.Animation.fallbackClip;
+                clip = anim.fallbackClip;
                 if (clip != null) return clip;
             }
             else
             {
-                clip = target.Animation.Clips[animSpecifierIndex - 1].Clip;
+                clip = anim.Clips[animSpecifierIndex - 1].Clip;
                 if (clip != null) return clip;
             }
 
-            for (int i = 0; i < target.Animation.Clips.Length; i++)
+            if (anim.Clips != null)
             {
-                clip = target.Animation.Clips[i].Clip;
-
-                if (clip != null)
+                for (int i = 0; i < anim.Clips.Length; i++)
                 {
-                    animSpecifierIndex = i + 1;
-                    return clip;
+                    clip = anim.Clips[i].Clip;
+
+                    if (clip != null)
+                    {
+                        animSpecifierIndex = i + 1;
+                        return clip;
+                    }
                 }
             }
-
+            
             return null;
         }
 

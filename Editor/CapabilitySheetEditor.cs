@@ -374,13 +374,7 @@ namespace SBG.Capabilities.Editor
         {
             serializedObject.Update();
 
-            if (sheet.Capablities == null) return;
-
-            List<Capability> capList = sheet.Capablities.ToList();
-
-            capList.Sort((a,b) => a.CompareTo(b));
-
-            sheet.Capablities = capList.ToArray();
+            sheet.Capablities = CapabilitySheet.SortTickOrder(sheet.Capablities.ToList()).ToArray();
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -390,9 +384,10 @@ namespace SBG.Capabilities.Editor
             if (c == null) return true;
             var animCap = c as AnimatedCapability;
             if (animCap == null || !animCap.DrivenByAnimationEvent) return true;
+            if (animCap.Animation == null) return false;
 
-            var clips = animCap.Animation.Clips.ToList();
-            clips.Add(new() { Clip = animCap.Animation.fallbackClip, SpecifierId = "fallback" });
+            var clips = new List<Animation.CapAnimClipEntry>() { new() { Clip = animCap.Animation.fallbackClip, SpecifierId = "fallback" } };
+            if (animCap.Animation.Clips != null) clips.AddRange(animCap.Animation.Clips);
 
             foreach (var clipEntry in clips)
             {

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SBG.Capabilities
@@ -9,15 +10,30 @@ namespace SBG.Capabilities
 
 		public Capability[] InstantiateSheet(CapabilityComponent owner)
 		{
-			Capability[] instances = new Capability[Capablities.Length];
+			var instances = new List<Capability>();
 
-			for (int i = 0; i < Capablities.Length; i++)
+			foreach (var item in this.Capablities)
 			{
-				instances[i] = Instantiate(Capablities[i]);
-				instances[i].Setup(owner);
+				var cap = Instantiate(item);
+				cap.Setup(owner);
+                instances.Add(cap);
 			}
 
-			return instances;
+			return SortTickOrder(instances).ToArray();
 		}
-	}
+
+		public static List<Capability> SortTickOrder(List<Capability> list)
+        {
+            if (list == null) return null;
+
+            list.Sort((a, b) => a.CompareTo(b));
+
+			foreach (var item in list)
+			{
+				if (item.IsCompound) item.Children = SortTickOrder(item.Children);
+			}
+
+            return list;
+        }
+    }
 }

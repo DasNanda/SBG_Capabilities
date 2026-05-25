@@ -116,7 +116,7 @@ namespace SBG.Capabilities
         {
             if (!isActive) return;
 
-            if (this != interruptor && Tags.All(t => tags.Contains(t)))
+            if (this != interruptor && Tags.Any(t => tags.Contains(t)))
             {
                 SetActive(false);
                 return;
