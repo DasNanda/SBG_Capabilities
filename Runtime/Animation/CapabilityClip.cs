@@ -83,12 +83,16 @@ namespace SBG.Capabilities.Animation
 
         public void Cancel()
         {
+            if (!IsPlaying) return;
+
             onCancel?.Invoke();
             StopClip();
         }
 
         private void Complete()
         {
+            if (!IsPlaying) return;
+
             onComplete?.Invoke();
             Active = false;
             StopClip();
@@ -104,7 +108,7 @@ namespace SBG.Capabilities.Animation
 
             IsPlaying = false;
 
-            channel.Next();
+            //channel.Next();
         }
     }
 }

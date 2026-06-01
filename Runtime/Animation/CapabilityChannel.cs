@@ -43,8 +43,6 @@ namespace SBG.Capabilities.Animation
             playable.Destroy();
 
             clips.Remove(id);
-
-            Debug.Log($"Removed Clip {id}");
         }
 
         public bool IsClipRegistered(string id)
@@ -54,8 +52,15 @@ namespace SBG.Capabilities.Animation
 
         public void Update()
         {
-            if (currentTransition != null) currentTransition.Update();
-            else if (currentClip != null) currentClip.TryComplete();
+            if (currentTransition != null)
+            {
+                currentTransition.Update();
+            }
+            else if (currentClip != null)
+            {
+                if (currentClip.IsPlaying) currentClip.TryComplete();
+                else Next();
+            }
         }
 
         public void SetActive(string id, bool active)
@@ -85,7 +90,7 @@ namespace SBG.Capabilities.Animation
                 return;
             }
 
-            // Interrupt previous (will trigger the clip to play when Next() is called in Cancel
+            // Interrupt previous
             if (clip.Priority < currentClip.Priority)
             {
                 currentClip.Cancel();
