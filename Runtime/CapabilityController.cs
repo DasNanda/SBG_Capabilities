@@ -15,7 +15,7 @@ namespace SBG.Capabilities
 		private Dictionary<TickGroup, List<Capability>> tickGroups = new();
         private List<CapabilityBlock> blocks = new();
 
-        private void Start()
+        protected virtual void Start()
         {
             var capComponents = GetComponentsInChildren<CapabilityComponent>();
 
@@ -25,12 +25,12 @@ namespace SBG.Capabilities
 			}
         }
 
-        private void Update()
+        protected virtual void Update()
         {
             IterateCapabilities(Time.deltaTime, TickGroup.Update);
         }
 
-        private void FixedUpdate()
+        protected virtual void FixedUpdate()
         {
             IterateCapabilities(Time.fixedDeltaTime, TickGroup.FixedUpdate);
         }
