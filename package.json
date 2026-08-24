@@ -1,6 +1,6 @@
 {
 	"name": "com.starbannergames.capabilities",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"displayName": "SBG Capabilities",
 	"description": "A Unity Implementation of a Capability System based on the GDC talk 'Capabilities: Coding ALL the Gameplay for Split Fiction' by Ylva Werner",
 	"unity": "6000.0",
