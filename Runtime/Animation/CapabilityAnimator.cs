@@ -42,6 +42,13 @@ namespace SBG.Capabilities.Animation
             }
         }
 
+        public void SetSpeed(float speed, string channelId)
+        {
+            if (!channels.TryGetValue(channelId, out var channel)) return;
+
+            PlayableExtensions.SetSpeed(channel.Mixer, speed);
+        }
+
         public void AddClip(string clipId, string channelId, int priority, TransitionLength inLength, TransitionLength outLength, AnimationClip clip, Action onComplete = null, Action onCancel = null)
 		{
 			if (!channels.ContainsKey(channelId)) AddChannel(channelId);
