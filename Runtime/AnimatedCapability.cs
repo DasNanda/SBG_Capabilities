@@ -10,6 +10,7 @@ namespace SBG.Capabilities
         public virtual bool DrivenByAnimationEvent => false;
 
         protected CapabilityAnimator animator;
+        protected string LastAnimSelector => lastAnimSelector;
 
         [SerializeField] protected CapabilityAnimation animation;
 
