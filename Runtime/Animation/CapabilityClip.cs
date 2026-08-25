@@ -69,11 +69,14 @@ namespace SBG.Capabilities.Animation
 
             playable.SetDone(false);
 
+            bool negativeSpeed = PlayableExtensions.GetSpeed(channel.Mixer) < 0;
+            float startTime = negativeSpeed ? 1 : 0;
+
             // For some reason we gotta set the time twice,
             // otherwise all animation events will trigger instantly
             // and then again at the proper timing.
-            playable.SetTime(0);
-            playable.SetTime(0);
+            playable.SetTime(startTime);
+            playable.SetTime(startTime);
 
             playable.SetSpeed(0);
             playable.Play();
