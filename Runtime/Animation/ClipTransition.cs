@@ -18,7 +18,6 @@ namespace SBG.Capabilities.Animation
             this.onComplete = onComplete;
 
             duration = GetDuration(from, to);
-
             startTime = Time.time;
 
             if (duration <= 0)
@@ -41,7 +40,7 @@ namespace SBG.Capabilities.Animation
                 validDuration = true;
             }
 
-            if (to != null && to.OutTransitionLength.IsUsed)
+            if (to != null && to.InTransitionLength.IsUsed)
             {
                 max = Mathf.Min(max, to.InTransitionLength.MaxLength);
                 result = Mathf.Max(result, to.InTransitionLength.PreferedLength);
