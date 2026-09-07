@@ -13,12 +13,14 @@ namespace SBG.Capabilities.Animation
     public struct TransitionLength
     {
         public bool IsUsed;
+        public bool ForceCrossfade;
         public float PreferedLength;
         public float MaxLength;
 
-        public TransitionLength(bool isUsed, float preferedLength, float maxLength)
+        public TransitionLength(bool isUsed, bool forceCrossfade, float preferedLength, float maxLength)
         {
             IsUsed = isUsed;
+            ForceCrossfade = forceCrossfade;
             PreferedLength = preferedLength;
             MaxLength = maxLength;
         }
@@ -29,8 +31,8 @@ namespace SBG.Capabilities.Animation
 	{
         public string Channel = "default";
         [Min(0)] public int Priority = 100;
-        public TransitionLength InTransitionLength = new TransitionLength(false, 0, 1);
-        public TransitionLength OutTransitionLength = new TransitionLength(false, 0, 1);
+        public TransitionLength InTransitionLength = new TransitionLength(false, false, 0, 1);
+        public TransitionLength OutTransitionLength = new TransitionLength(false, false, 0, 1);
         public AnimationClip fallbackClip;
         public CapAnimClipEntry[] Clips;
 	}

@@ -121,8 +121,12 @@ namespace SBG.Capabilities.Animation
 
         private void Transition(CapabilityClip from, CapabilityClip to)
         {
+            bool crossfade = false;
+            if (from != null && from.OutTransitionLength.IsUsed && from.OutTransitionLength.ForceCrossfade) crossfade = true;
+            else if (to != null && to.InTransitionLength.IsUsed && to.InTransitionLength.ForceCrossfade) crossfade = true;
+
             currentClip = to;
-            currentClip?.Play();
+            currentClip?.Play(crossfade ? 1 : 0);
             currentTransition = new ClipTransition(from, to, ClearTransition);
         }
 

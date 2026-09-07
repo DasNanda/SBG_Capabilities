@@ -1,4 +1,5 @@
 using SBG.Capabilities.Animation;
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -28,18 +29,22 @@ namespace SBG.Capabilities.Editor
             var prefLabelRect = new Rect(x, position.y, 60, position.height);
             x += prefLabelRect.width;
 
-            var prefLengthRect = new Rect(x, position.y, 150, position.height);
+            var prefLengthRect = new Rect(x, position.y, 100, position.height);
             x += prefLengthRect.width;
 
             var maxLabelRect = new Rect(x, position.y, 60, position.height);
             x += maxLabelRect.width;
 
-            var maxLengthRect = new Rect(x, position.y, position.width - x + position.x, position.height);
+            var maxLengthRect = new Rect(x, position.y, 100, position.height);
+            x += maxLengthRect.width + 10;
+
+            var crossfadeRect = new Rect(x, position.y, position.width - x + position.x, position.height);
 
             // Fetch Properties
             var isUsed = property.FindPropertyRelative(nameof(dummy.IsUsed));
             var preferedLength = property.FindPropertyRelative(nameof(dummy.PreferedLength));
             var maxLength = property.FindPropertyRelative(nameof(dummy.MaxLength));
+            var crossfade = property.FindPropertyRelative(nameof(dummy.ForceCrossfade));
 
             // Draw
             EditorGUI.PropertyField(toggleRect, isUsed, GUIContent.none);
@@ -64,6 +69,15 @@ namespace SBG.Capabilities.Editor
                 if (maxLength.floatValue < 0) maxLength.floatValue = 0;
                 if (preferedLength.floatValue > maxLength.floatValue) preferedLength.floatValue = maxLength.floatValue;
             }
+
+            GUI.color = crossfade.boolValue ? Color.cyan : Color.green;
+
+            if (GUI.Button(crossfadeRect, crossfade.boolValue ? "Crossfade" : "Out-In"))
+            {
+                crossfade.boolValue = !crossfade.boolValue;
+            }
+
+            GUI.color = Color.white;
 
             EditorGUI.EndDisabledGroup();
 
