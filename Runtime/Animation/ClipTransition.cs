@@ -11,11 +11,17 @@ namespace SBG.Capabilities.Animation
         private float startTime;
         private Action onComplete;
 
+        private float fromStartWeight;
+        private float toStartWeight;
+
         public ClipTransition(CapabilityClip from, CapabilityClip to, Action onComplete)
         {
             this.from = from;
             this.to = to;
             this.onComplete = onComplete;
+
+            if (from != null) fromStartWeight = from.GetWeight();
+            toStartWeight = to.GetWeight();
 
             duration = GetDuration(from, to);
             startTime = Time.time;
@@ -66,12 +72,18 @@ namespace SBG.Capabilities.Animation
             }
         }
 
-        public void Stop() => SetWeights(1);
+        public void SnapToEndState() => SetWeights(1);
 
         private void SetWeights(float progress)
         {
-            from?.SetWeight(1 - progress);
-            to.SetWeight(progress);
+            if (from != null)
+            {
+                float fromWeight = Mathf.Lerp(fromStartWeight, 0, progress);
+                from?.SetWeight(fromWeight);
+            }
+
+            float toWeight = Mathf.Lerp(toStartWeight, 1, progress);
+            to.SetWeight(toWeight);
         }
     }
 }

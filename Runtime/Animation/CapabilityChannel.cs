@@ -99,11 +99,8 @@ namespace SBG.Capabilities.Animation
 
         public void Next()
         {
-            ClearTransition();
-
             int highestPrio = int.MaxValue;
-            lastClip = currentClip;
-            currentClip = null;
+            CapabilityClip newClip = null;
 
             foreach (var clip in clips.Values)
             {
@@ -112,9 +109,23 @@ namespace SBG.Capabilities.Animation
                 if (clip.Priority < highestPrio)
                 {
                     highestPrio = clip.Priority;
-                    currentClip = clip;
+                    newClip = clip;
                 }
             }
+
+            if (newClip == currentClip)
+            {
+                currentClip.Play(1);
+                currentClip.SetWeight(1);
+                return;
+            }
+
+            // When transitioning back and forth quickly, set up the transition so it doesnt snap to the end
+            if (newClip != null && lastClip == newClip) currentTransition = null;
+            else ClearTransition();
+
+            lastClip = currentClip;
+            currentClip = newClip;
 
             if (currentClip != null) Transition(lastClip, currentClip);
         }
@@ -134,7 +145,7 @@ namespace SBG.Capabilities.Animation
         {
             if (currentTransition != null)
             {
-                currentTransition.Stop();
+                currentTransition.SnapToEndState();
                 currentTransition = null;
                 lastClip = null;
             }

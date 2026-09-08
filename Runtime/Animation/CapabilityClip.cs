@@ -62,6 +62,11 @@ namespace SBG.Capabilities.Animation
             if (weight >= 1) playable.SetSpeed(1);
         }
 
+        public float GetWeight()
+        {
+            return channel.Mixer.GetInputWeight(InputIndex);
+        }
+
         public void Play(float startSpeed=0)
         {
             channel.Mixer.SetInputWeight(InputIndex, 0);
@@ -106,6 +111,7 @@ namespace SBG.Capabilities.Animation
             //channel.Mixer.SetInputWeight(InputIndex, 0);
             channel.Mixer.SetDone(true);
 
+            playable.SetSpeed(0);
             playable.SetDone(true);
             playable.Pause();
 
