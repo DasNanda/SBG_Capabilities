@@ -86,7 +86,7 @@ namespace SBG.Capabilities.Animation
             // Play first
             if (currentClip == null)
             {
-                Transition(lastClip, clip, null);
+                Transition(lastClip, clip);
                 return;
             }
 
@@ -99,7 +99,7 @@ namespace SBG.Capabilities.Animation
 
         public void Next()
         {
-            ClearTransition(out var lingerClips);
+            ClearTransition();
 
             int highestPrio = int.MaxValue;
             lastClip = currentClip;
@@ -116,10 +116,10 @@ namespace SBG.Capabilities.Animation
                 }
             }
 
-            if (currentClip != null) Transition(lastClip, currentClip, lingerClips);
+            if (currentClip != null) Transition(lastClip, currentClip);
         }
 
-        private void Transition(CapabilityClip from, CapabilityClip to, CapabilityClip[] lingerClips)
+        private void Transition(CapabilityClip from, CapabilityClip to)
         {
             bool crossfade = false;
             if (from != null && from.OutTransitionLength.IsUsed && from.OutTransitionLength.ForceCrossfade) crossfade = true;
@@ -127,21 +127,7 @@ namespace SBG.Capabilities.Animation
 
             currentClip = to;
             currentClip?.Play(crossfade ? 1 : 0);
-            currentTransition = new ClipTransition(from, to, ClearTransition, lingerClips);
-        }
-
-        private void ClearTransition(out CapabilityClip[] lingerClips)
-        {
-            if (currentTransition != null)
-            {
-                lingerClips = currentTransition.GetLingerClips();
-                currentTransition = null;
-                lastClip = null;
-            }
-            else
-            {
-                lingerClips = null;
-            }
+            currentTransition = new ClipTransition(from, to, ClearTransition);
         }
 
         private void ClearTransition()

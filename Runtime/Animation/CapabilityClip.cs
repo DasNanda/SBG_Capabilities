@@ -55,11 +55,6 @@ namespace SBG.Capabilities.Animation
             Complete();
         }
 
-        public float GetWeight()
-        {
-            return channel.Mixer.GetInputWeight(InputIndex);
-        }
-
         public void SetWeight(float weight)
         {
             channel.Mixer.SetInputWeight(InputIndex, weight);
