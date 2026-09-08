@@ -79,6 +79,11 @@ namespace SBG.Capabilities.Editor
             }
         }
 
+        private void OnInspectorUpdate()
+        {
+            if (target != null && EditorApplication.isPlaying) Repaint();
+        }
+
         private void OnGUI()
 		{
             if (target == null)
