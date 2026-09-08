@@ -1,4 +1,6 @@
+using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SBG.Capabilities.Animation
@@ -10,12 +12,17 @@ namespace SBG.Capabilities.Animation
         private float duration;
         private float startTime;
         private Action onComplete;
+        private CapabilityClip[] lingerClips;
+        private float[] lingerClipStartWeights;
 
-        public ClipTransition(CapabilityClip from, CapabilityClip to, Action onComplete)
+        public ClipTransition(CapabilityClip from, CapabilityClip to, Action onComplete, CapabilityClip[] lingerClips=null)
         {
             this.from = from;
             this.to = to;
             this.onComplete = onComplete;
+            this.lingerClips = lingerClips;
+
+            InitLingerClipWeights();
 
             duration = GetDuration(from, to);
             startTime = Time.time;
@@ -68,10 +75,51 @@ namespace SBG.Capabilities.Animation
 
         public void Stop() => SetWeights(1);
 
+        public CapabilityClip[] GetLingerClips()
+        {
+            List<CapabilityClip> lingers = new();
+
+            if (from != null && from.GetWeight() > 0) lingers.Add(from);
+
+            if (lingerClips != null)
+            {
+                foreach (var clip in lingerClips)
+                {
+                    if (clip.GetWeight() > 0) lingers.Add(clip);
+                }
+            }
+
+            return lingers.ToArray();
+        }
+
         private void SetWeights(float progress)
         {
+            UpdateLingerClips(1 - progress);
             from?.SetWeight(1 - progress);
             to.SetWeight(progress);
+        }
+
+        private void InitLingerClipWeights()
+        {
+            if (lingerClips == null) return;
+
+            lingerClipStartWeights = new float[lingerClips.Length];
+
+            for (int i = 0; i < lingerClips.Length; i++)
+            {
+                lingerClipStartWeights[i] = lingerClips[i].GetWeight();
+            }
+        }
+
+        private void UpdateLingerClips(float progress)
+        {
+            if (lingerClips == null) return;
+
+            for (int i = 0; i < lingerClips.Length; i++)
+            {
+                float weight = Mathf.Lerp(lingerClipStartWeights[i], 0, progress);
+                lingerClips[i].SetWeight(weight);
+            }
         }
     }
 }
