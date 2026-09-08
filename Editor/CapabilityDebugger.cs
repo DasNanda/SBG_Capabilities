@@ -29,6 +29,8 @@ namespace SBG.Capabilities.Editor
         private bool collapseInactiveCompounds = true;
 		private Vector2 scroll = Vector2.zero;
 
+        private string targetDisplayName;
+
         [MenuItem("SBG/Debugging/Capability Debugger")]
 		public static void ShowWindow()
 		{
@@ -75,7 +77,11 @@ namespace SBG.Capabilities.Editor
 			if (Selection.activeGameObject != null)
 			{
                 var controller = Selection.activeGameObject.GetComponent<CapabilityController>();
-                if (controller != null) target = controller;
+                if (controller != null)
+                {
+                    target = controller;
+                    targetDisplayName = GetDisplayName(controller);
+                }
             }
         }
 
@@ -107,17 +113,11 @@ namespace SBG.Capabilities.Editor
                             continue;
                         }
 
-                        string displayName = controller.gameObject.name;
-
-                        if (controller.transform.parent != null)
-                        {
-                            displayName = displayName.Insert(0, $"{controller.transform.parent.name}/");
-                        }
-
-                        if (GUILayout.Button(displayName, EditorStyles.toolbarButton))
+                        if (GUILayout.Button(GetDisplayName(controller), EditorStyles.toolbarButton))
                         {
                             target = controller;
                             Selection.activeGameObject = controller.gameObject;
+                            targetDisplayName = GetDisplayName(controller);
                         }
                     }
                 }
@@ -139,7 +139,7 @@ namespace SBG.Capabilities.Editor
             GUI.color = Color.magenta;
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
 
-            EditorGUILayout.LabelField($"Capability Controller: {target.gameObject.name}", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField($"Capability Controller: {targetDisplayName}", EditorStyles.boldLabel);
             GUI.color = Color.red;
             if (GUILayout.Button("X", GUILayout.Width(50)))
             {
@@ -228,6 +228,18 @@ namespace SBG.Capabilities.Editor
 
             EditorGUI.indentLevel--;
 			EditorGUILayout.EndScrollView();
+        }
+
+        private string GetDisplayName(CapabilityController controller)
+        {
+            string displayName = controller.gameObject.name;
+
+            if (controller.transform.parent != null)
+            {
+                return displayName.Insert(0, $"{controller.transform.parent.name}/");
+            }
+
+            return displayName;
         }
 
         private void DrawCapabilityLine(Capability capability, int indexInGroup, int depth)
