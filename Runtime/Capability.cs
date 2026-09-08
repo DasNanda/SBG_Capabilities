@@ -149,5 +149,8 @@ namespace SBG.Capabilities
             if (this.TickGroup == other.TickGroup) return this.TickOrder.CompareTo(other.TickOrder);
             else return this.TickGroup.CompareTo(other.TickGroup);
         }
+
+        public virtual void OnDrawGizmos() { }
+        public virtual void OnDrawGizmosSelected() { }
     }
 }

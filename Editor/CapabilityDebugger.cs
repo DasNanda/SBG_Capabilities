@@ -1,4 +1,4 @@
-using SBG.Capabilities;
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -8,6 +8,7 @@ namespace SBG.Capabilities.Editor
 	public class CapabilityDebugger : EditorWindow
 	{
 		private CapabilityController target;
+        private CapabilityController[] availableTargets;
 
 		private readonly Color activeColor = new Color(.7f, 1f, .7f);
 		private readonly Color inactiveColor = Color.white;
@@ -17,7 +18,6 @@ namespace SBG.Capabilities.Editor
         private const float darkOffset = 0.1f;
 
 		private const float stateChangeLinger = 0.25f;
-		private const float controllerCheckInterval = 1f;
 
         private const string adhdPrefKey = "capdebug_adhd";
         private const string checkPrefKey = "capdebug_checkforcontroller";
@@ -25,11 +25,9 @@ namespace SBG.Capabilities.Editor
         private Texture2D tabIcon;
 
         private bool adhdMode = false;
-        private bool checkForControllerOnPlay = true;
+        private bool findControllersOnPlay = true;
         private bool collapseInactiveCompounds = true;
 		private Vector2 scroll = Vector2.zero;
-
-        private float checkTimerStart;
 
         [MenuItem("SBG/Debugging/Capability Debugger")]
 		public static void ShowWindow()
@@ -39,47 +37,46 @@ namespace SBG.Capabilities.Editor
 
         private void OnEnable()
         {
+            availableTargets = null;
+
 			Selection.selectionChanged += UpdateSelection;
+            EditorApplication.playModeStateChanged += OnPlayModeChange;
 
             tabIcon = Resources.Load<Texture2D>("Capabilities/ChildIcon");
             adhdMode = EditorPrefs.GetBool(adhdPrefKey, false);
-            checkForControllerOnPlay = EditorPrefs.GetBool(checkPrefKey, true);
+            findControllersOnPlay = EditorPrefs.GetBool(checkPrefKey, true);
             collapseInactiveCompounds = EditorPrefs.GetBool(collapsePrefKey, true);
+
+            UpdateSelection();
         }
 
         private void OnDisable()
         {
 			Selection.selectionChanged -= UpdateSelection;
+            EditorApplication.playModeStateChanged -= OnPlayModeChange;
 
             EditorPrefs.SetBool(adhdPrefKey, adhdMode);
-            EditorPrefs.SetBool(checkPrefKey, checkForControllerOnPlay);
+            EditorPrefs.SetBool(checkPrefKey, findControllersOnPlay);
             EditorPrefs.SetBool(collapsePrefKey, collapseInactiveCompounds);
+        }
+
+        private void OnPlayModeChange(PlayModeStateChange change)
+        {
+            if (change != PlayModeStateChange.EnteredPlayMode) return;
+
+            availableTargets = GameObject.FindObjectsByType<CapabilityController>(FindObjectsInactive.Include, FindObjectsSortMode.InstanceID);
+            Repaint();
         }
 
         private void UpdateSelection()
         {
-			if (Selection.activeGameObject == null)
+            if (!EditorApplication.isPlaying) return;
+
+			if (Selection.activeGameObject != null)
 			{
-				target = null;
-				return;
-			}
-
-			target = Selection.activeGameObject.GetComponent<CapabilityController>();
-        }
-
-        private void OnInspectorUpdate()
-        {
-            if (EditorApplication.isPlaying && target == null && checkForControllerOnPlay)
-            {
-                if (Time.realtimeSinceStartup - checkTimerStart >= controllerCheckInterval)
-                {
-                    var controller = GameObject.FindFirstObjectByType<CapabilityController>();
-                    if (controller != null) Selection.activeGameObject = controller.gameObject;
-                    else checkTimerStart = Time.realtimeSinceStartup;
-                }
+                var controller = Selection.activeGameObject.GetComponent<CapabilityController>();
+                if (controller != null) target = controller;
             }
-
-			Repaint();
         }
 
         private void OnGUI()
@@ -87,22 +84,67 @@ namespace SBG.Capabilities.Editor
             if (target == null)
 			{
 				EditorGUILayout.HelpBox("No CapabilityController selected", MessageType.Info);
-                checkForControllerOnPlay = EditorGUILayout.Toggle("Find Target on Play", checkForControllerOnPlay);
-                collapseInactiveCompounds = EditorGUILayout.Toggle("Collapse Inactive", collapseInactiveCompounds);
-                adhdMode = EditorGUILayout.Toggle("ADHD Mode", adhdMode);
+                findControllersOnPlay = EditorGUILayout.Toggle("Find Controllers on Play", findControllersOnPlay);
                 EditorGUILayout.Space();
 
-                if (GUILayout.Button("Find Controller", GUILayout.Height(40)))
-				{
-					var controller = GameObject.FindFirstObjectByType<CapabilityController>();
-					if (controller != null) Selection.activeGameObject = controller.gameObject;
-				}
+                if (!EditorApplication.isPlaying) return;
+
+                EditorGUILayout.LabelField("Available Targets");
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+                if (availableTargets != null && availableTargets.Length > 0)
+                {
+                    foreach (var controller in availableTargets)
+                    {
+                        if (controller == null)
+                        {
+                            EditorGUILayout.LabelField("Null", EditorStyles.toolbarButton);
+                            continue;
+                        }
+
+                        string displayName = controller.gameObject.name;
+
+                        if (controller.transform.parent != null)
+                        {
+                            displayName = displayName.Insert(0, $"{controller.transform.parent.name}/");
+                        }
+
+                        if (GUILayout.Button(displayName, EditorStyles.toolbarButton))
+                        {
+                            target = controller;
+                            Selection.activeGameObject = controller.gameObject;
+                        }
+                    }
+                }
+                else
+                {
+                    EditorGUILayout.LabelField("None", EditorStyles.toolbarButton);
+                }
+
+                EditorGUILayout.EndVertical();
+
+                if (GUILayout.Button("Find Controllers", GUILayout.Height(40)))
+                {
+                    availableTargets = GameObject.FindObjectsByType<CapabilityController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                }
 
                 return;
 			}
 
+            GUI.color = Color.magenta;
+            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+
             EditorGUILayout.LabelField($"Capability Controller: {target.gameObject.name}", EditorStyles.boldLabel);
-            checkForControllerOnPlay = EditorGUILayout.Toggle("Find Target on Play", checkForControllerOnPlay);
+            GUI.color = Color.red;
+            if (GUILayout.Button("X", GUILayout.Width(50)))
+            {
+                target = null;
+                EditorGUILayout.EndHorizontal();
+                return;
+            }
+            EditorGUILayout.EndHorizontal();
+            GUI.color = Color.white;
+
             collapseInactiveCompounds = EditorGUILayout.Toggle("Collapse Inactive", collapseInactiveCompounds);
             adhdMode = EditorGUILayout.Toggle("ADHD Mode", adhdMode);
             EditorGUILayout.Space();

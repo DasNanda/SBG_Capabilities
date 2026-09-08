@@ -153,5 +153,29 @@ namespace SBG.Capabilities
                 }
             }
         }
+
+#if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            foreach (var g in tickGroups)
+            {
+                foreach (var c in g.Value)
+                {
+                    c.OnDrawGizmos();
+                }
+            }
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            foreach (var g in tickGroups)
+            {
+                foreach (var c in g.Value)
+                {
+                    c.OnDrawGizmosSelected();
+                }
+            }
+        }
+#endif
     }
 }
