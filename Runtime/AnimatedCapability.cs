@@ -51,13 +51,13 @@ namespace SBG.Capabilities
                 if (string.IsNullOrEmpty(entry.SpecifierId) || entry.Clip == null) continue;
 
                 string clipId = $"{name}_{entry.SpecifierId}";
-                animator.RemoveClip(clipId, animation.Channel);
+                animator.RemovePlayable(clipId, animation.Channel);
             }
 
             if (animation.fallbackClip != null)
             {
                 string clipId = $"{name}_fallback";
-                animator.RemoveClip(clipId, animation.Channel);
+                animator.RemovePlayable(clipId, animation.Channel);
             }
         }
 
@@ -65,7 +65,7 @@ namespace SBG.Capabilities
         {
             string id = $"{name}_{selectorId}";
 
-            if (animator.IsClipRegistered(id, animation.Channel))
+            if (animator.IsPlayableRegistered(id, animation.Channel))
             {
                 animator.SetActive(id, animation.Channel, active);
             }

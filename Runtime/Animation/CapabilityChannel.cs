@@ -10,11 +10,12 @@ namespace SBG.Capabilities.Animation
 	{
         public AnimationMixerPlayable Mixer { get; private set; }
 
-        private Dictionary<string, CapabilityClip> clips = new();
-        private CapabilityClip currentClip;
+        private Dictionary<string, ICapabilityPlayable> playables = new();
+        private ICapabilityPlayable currentPlayable;
         private ClipTransition currentTransition;
+        private bool currentIsBlendtree;
 
-        private CapabilityClip lastClip;
+        private ICapabilityPlayable lastClip;
 
         public CapabilityChannel(AnimationMixerPlayable playable)
         {
@@ -23,31 +24,42 @@ namespace SBG.Capabilities.Animation
 
         public void AddClip(string id, int priority, TransitionLength inLength, TransitionLength outLength, AnimationClip clip, Action onComplete, Action onCancel)
         {
-            if (clips.ContainsKey(id))
+            if (playables.ContainsKey(id))
             {
                 Debug.LogError($"Clip '{id}' already exists!");
                 return;
             }
 
-            clips.Add(id, new CapabilityClip(clip, this, id, priority, inLength, outLength, onComplete, onCancel));
+            playables.Add(id, new CapabilityClip(clip, this, id, priority, inLength, outLength, onComplete, onCancel));
         }
 
-        public void RemoveClip(string id)
+        public void AddBlendtree(string id, CapabilityBlendtreeAnimation blendtree, Action onCancel)
         {
-            if (!clips.ContainsKey(id)) return;
+            if (playables.ContainsKey(id))
+            {
+                Debug.LogError($"Clip '{id}' already exists!");
+                return;
+            }
 
-            int inputIndex = clips[id].InputIndex;
+            playables.Add(id, new CapabilityBlendtree(this, id, blendtree, onCancel));
+        }
+
+        public void RemovePlayable(string id)
+        {
+            if (!playables.ContainsKey(id)) return;
+
+            int inputIndex = playables[id].InputIndex;
             var playable = Mixer.GetInput(inputIndex);
 
             Mixer.DisconnectInput(inputIndex);
             playable.Destroy();
 
-            clips.Remove(id);
+            playables.Remove(id);
         }
 
-        public bool IsClipRegistered(string id)
+        public bool IsPlayableRegistered(string id)
         {
-            return clips.ContainsKey(id);
+            return playables.ContainsKey(id);
         }
 
         public void Update()
@@ -56,16 +68,16 @@ namespace SBG.Capabilities.Animation
             {
                 currentTransition.Update();
             }
-            else if (currentClip != null)
+            else if (currentPlayable != null && !currentIsBlendtree)
             {
-                if (currentClip.IsPlaying) currentClip.TryComplete();
+                if (currentPlayable.IsPlaying) (currentPlayable as CapabilityClip).TryComplete();
                 else Next();
             }
         }
 
         public void SetActive(string id, bool active)
         {
-            if (!clips.TryGetValue(id, out var clip))
+            if (!playables.TryGetValue(id, out var clip))
             {
                 Debug.LogError($"Clip {id} not found!");
                 return;
@@ -81,28 +93,39 @@ namespace SBG.Capabilities.Animation
             }
 
             // Already Playing Target Clip
-            if (currentClip == clip) return;
+            if (currentPlayable == clip) return;
 
             // Play first
-            if (currentClip == null)
+            if (currentPlayable == null)
             {
                 Transition(lastClip, clip);
                 return;
             }
 
             // Interrupt previous
-            if (clip.Priority < currentClip.Priority)
+            if (clip.Priority < currentPlayable.Priority)
             {
-                currentClip.Cancel();
+                currentPlayable.Cancel();
             }
+        }
+
+        public void SetBlendtree(string id, Vector2 direction)
+        {
+            if (!playables.TryGetValue(id, out var clip))
+            {
+                Debug.LogError($"Clip {id} not found!");
+                return;
+            }
+
+            (clip as CapabilityBlendtree).SetBlend(direction);
         }
 
         public void Next()
         {
             int highestPrio = int.MaxValue;
-            CapabilityClip newClip = null;
+            ICapabilityPlayable newClip = null;
 
-            foreach (var clip in clips.Values)
+            foreach (var clip in playables.Values)
             {
                 if (!clip.Active) continue;
 
@@ -113,10 +136,10 @@ namespace SBG.Capabilities.Animation
                 }
             }
 
-            if (newClip == currentClip)
+            if (newClip == currentPlayable)
             {
-                currentClip.Play(1);
-                currentClip.SetWeight(1);
+                currentPlayable.Play(1);
+                currentPlayable.SetWeight(1);
                 return;
             }
 
@@ -124,20 +147,23 @@ namespace SBG.Capabilities.Animation
             if (newClip != null && lastClip == newClip) currentTransition = null;
             else ClearTransition();
 
-            lastClip = currentClip;
-            currentClip = newClip;
+            lastClip = currentPlayable;
+            currentPlayable = newClip;
+            currentIsBlendtree = currentPlayable is CapabilityBlendtree;
 
-            if (currentClip != null) Transition(lastClip, currentClip);
+            if (currentPlayable != null) Transition(lastClip, currentPlayable);
         }
 
-        private void Transition(CapabilityClip from, CapabilityClip to)
+        private void Transition(ICapabilityPlayable from, ICapabilityPlayable to)
         {
             bool crossfade = false;
             if (from != null && from.OutTransitionLength.IsUsed && from.OutTransitionLength.ForceCrossfade) crossfade = true;
             else if (to != null && to.InTransitionLength.IsUsed && to.InTransitionLength.ForceCrossfade) crossfade = true;
 
-            currentClip = to;
-            currentClip?.Play(crossfade ? 1 : 0);
+            currentPlayable = to;
+            currentIsBlendtree = currentPlayable is CapabilityBlendtree;
+
+            currentPlayable?.Play(crossfade ? 1 : 0);
             currentTransition = new ClipTransition(from, to, ClearTransition);
         }
 

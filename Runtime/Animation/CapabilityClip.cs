@@ -5,7 +5,7 @@ using UnityEngine.Playables;
 
 namespace SBG.Capabilities.Animation
 {
-	internal class CapabilityClip
+	internal class CapabilityClip : ICapabilityPlayable
 	{
         public string Id { get; private set; }
         public int InputIndex { get; private set; }
@@ -14,7 +14,7 @@ namespace SBG.Capabilities.Animation
         public TransitionLength OutTransitionLength { get; private set; }
         public bool IsPlaying { get; private set; }
 
-        public bool Active;
+        public bool Active { get; set; }
 
         private AnimationClipPlayable playable;
         private CapabilityChannel channel;

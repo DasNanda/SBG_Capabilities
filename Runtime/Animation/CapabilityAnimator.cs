@@ -49,6 +49,13 @@ namespace SBG.Capabilities.Animation
             PlayableExtensions.SetSpeed(channel.Mixer, speed);
         }
 
+        public void SetBlendtree(string id, string channelId, Vector2 direction)
+        {
+            if (!channels.TryGetValue(channelId, out var channel)) return;
+
+            channel.SetBlendtree(id, direction);
+        }
+
         public void AddClip(string clipId, string channelId, int priority, TransitionLength inLength, TransitionLength outLength, AnimationClip clip, Action onComplete = null, Action onCancel = null)
 		{
 			if (!channels.ContainsKey(channelId)) AddChannel(channelId);
@@ -57,11 +64,20 @@ namespace SBG.Capabilities.Animation
 			channel.AddClip(clipId, priority, inLength, outLength, clip, onComplete, onCancel);
         }
 
-        public void RemoveClip(string clipId, string channelId)
+        public void AddBlendtree(string id, CapabilityBlendtreeAnimation blendtree, Action onCancel)
+        {
+            string channelId = blendtree.Channel;
+
+            if (!channels.ContainsKey(channelId)) AddChannel(channelId);
+            var channel = channels[channelId];
+            channel.AddBlendtree(id, blendtree, onCancel);
+        }
+
+        public void RemovePlayable(string clipId, string channelId)
         {
             if (!channels.ContainsKey(channelId)) return;
 
-            channels[channelId].RemoveClip(clipId);
+            channels[channelId].RemovePlayable(clipId);
         }
 
         public void SetActive(string clipId, string channelId, bool active)
@@ -69,9 +85,9 @@ namespace SBG.Capabilities.Animation
             channels[channelId].SetActive(clipId, active);
         }
 
-        public bool IsClipRegistered(string clipId, string channelId)
+        public bool IsPlayableRegistered(string clipId, string channelId)
         {
-            return channels[channelId].IsClipRegistered(clipId);
+            return channels[channelId].IsPlayableRegistered(clipId);
         }
 
         private void AddChannel(string id)

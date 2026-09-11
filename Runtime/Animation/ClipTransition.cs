@@ -5,8 +5,8 @@ namespace SBG.Capabilities.Animation
 {
 	internal class ClipTransition
 	{
-        private CapabilityClip from;
-        private CapabilityClip to;
+        private ICapabilityPlayable from;
+        private ICapabilityPlayable to;
         private float duration;
         private float startTime;
         private Action onComplete;
@@ -14,7 +14,7 @@ namespace SBG.Capabilities.Animation
         private float fromStartWeight;
         private float toStartWeight;
 
-        public ClipTransition(CapabilityClip from, CapabilityClip to, Action onComplete)
+        public ClipTransition(ICapabilityPlayable from, ICapabilityPlayable to, Action onComplete)
         {
             this.from = from;
             this.to = to;
@@ -33,7 +33,7 @@ namespace SBG.Capabilities.Animation
             }
         }
 
-        private float GetDuration(CapabilityClip from, CapabilityClip to)
+        private float GetDuration(ICapabilityPlayable from, ICapabilityPlayable to)
         {
             float result = float.MaxValue;
             float max = float.MaxValue;
